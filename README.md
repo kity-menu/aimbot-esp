@@ -1,4 +1,4 @@
--- Serviços
+-- Serviços 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -407,30 +407,43 @@ local function CreateGui()
 	Instance.new("UICorner",flyBox).CornerRadius=UDim.new(0,6)
 	flyBox.FocusLost:Connect(function()
 		local v=tonumber(flyBox.Text)
-		if v and v>0 and v<=1000 then
+		if v and v>0 and v<=500 then
 			FLY_SPEED=v
 		else flyBox.Text=tostring(FLY_SPEED) end
 	end)
 
-	-- Tabs
-	tabESP.MouseButton1Click:Connect(function()
-		ESPPage.Visible=true
-		AimbotPage.Visible=false
-		MiscsPage.Visible=false
+	-- Tabs Switch
+	local function showTab(tab)
+		ESPPage.Visible = (tab=="esp")
+		AimbotPage.Visible = (tab=="aimbot")
+		MiscsPage.Visible = (tab=="miscs")
+	end
+	tabESP.MouseButton1Click:Connect(function() showTab("esp") end)
+	tabAimbot.MouseButton1Click:Connect(function() showTab("aimbot") end)
+	tabMiscs.MouseButton1Click:Connect(function() showTab("miscs") end)
+
+	-- >> ADIÇÃO: Movimento do Painel <<
+	local dragging = false
+	local dragStart, startPos
+	Main.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = true
+			dragStart = input.Position
+			startPos = Main.Position
+		end
 	end)
-	tabAimbot.MouseButton1Click:Connect(function()
-		ESPPage.Visible=false
-		AimbotPage.Visible=true
-		MiscsPage.Visible=false
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local delta = input.Position - dragStart
+			Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		end
 	end)
-	tabMiscs.MouseButton1Click:Connect(function()
-		ESPPage.Visible=false
-		AimbotPage.Visible=false
-		MiscsPage.Visible=true
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
 	end)
 
-	return ScreenGui
 end
 
 CreateGui()
-applyWalkSpeed(WALK_ENABLED and WALK_SPEED or 16)
